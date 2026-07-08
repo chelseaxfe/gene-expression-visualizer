@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gene Expression Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="hero-icon">📊</div>
+      <h1>Gene Expression Visualizer</h1>
+      <p>Enter gene names, fold changes, and p-values to generate a bar chart, volcano plot, and heatmap.</p>
+    </header>
+
+    <main class="panel">
+      <section class="input-card">
+        <label for="dataInput">Gene Expression Data</label>
+        <textarea
+          id="dataInput"
+          spellcheck="false"
+          placeholder="Gene, Log2 Fold Change, P-value&#10;TP53, 2.8, 0.0009&#10;BRCA1, -3.1, 0.0002&#10;EGFR, 1.9, 0.012"
+        ></textarea>
+        <p class="hint">One gene per line: <code>gene, fold change, p-value</code> &mdash; separated by commas, tabs, or spaces.</p>
+
+        <div class="threshold-row">
+          <div class="threshold-field">
+            <label for="fcThreshold">Fold-change threshold</label>
+            <input id="fcThreshold" type="number" step="0.1" min="0" value="1.0" />
+          </div>
+          <div class="threshold-field">
+            <label for="pThreshold">P-value threshold</label>
+            <input id="pThreshold" type="number" step="0.01" min="0" max="1" value="0.05" />
+          </div>
+        </div>
+
+        <div class="input-footer">
+          <span id="rowCount" class="row-count">0 genes</span>
+          <div class="actions">
+            <button id="exampleBtn" class="btn btn-ghost" type="button">Load Example</button>
+            <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+            <button id="visualizeBtn" class="btn btn-primary" type="button">Visualize</button>
+          </div>
+        </div>
+
+        <p id="errorMessage" class="error-message" hidden></p>
+      </section>
+
+      <section id="results" class="results" hidden>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="stat-label">Total Genes</span>
+            <span id="statTotal" class="stat-value">0</span>
+          </div>
+          <div class="stat-card up">
+            <span class="stat-label">Upregulated</span>
+            <span id="statUp" class="stat-value">0</span>
+          </div>
+          <div class="stat-card down">
+            <span class="stat-label">Downregulated</span>
+            <span id="statDown" class="stat-value">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Not Significant</span>
+            <span id="statNs" class="stat-value">0</span>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Fold Change by Gene</h3>
+          <div id="barChart" class="chart-plot"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Volcano Plot</h3>
+          <div id="volcanoChart" class="chart-plot"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Fold Change Heatmap</h3>
+          <div id="heatmapChart" class="chart-plot chart-plot-tall"></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>Gene Table</h3>
+          <div class="table-wrapper">
+            <table id="geneTable">
+              <thead>
+                <tr>
+                  <th>Gene</th>
+                  <th>Log2 FC</th>
+                  <th>P-value</th>
+                  <th>-Log10(p)</th>
+                  <th>Regulation</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Gene Expression Visualizer &mdash; built with Flask &amp; Plotly</p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
