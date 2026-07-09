@@ -46,7 +46,23 @@ const PLOTLY_LAYOUT_BASE = {
   yaxis: { gridcolor: "#253049", zerolinecolor: "#37476b" },
 };
 
-const PLOTLY_CONFIG = { responsive: true, displaylogo: false };
+const PLOTLY_CONFIG = { displaylogo: false, responsive: false };
+
+const MIN_PX_PER_BAR = 40;
+const MIN_PX_PER_ROW = 28;
+
+// Sizes a plot's inner div in pixels against its (fixed-size, scrollable)
+// viewport, growing beyond the viewport when there are many data points so
+// the viewport scrolls instead of the plot overflowing onto other sections.
+function sizePlotElement(plotId, { width, height }) {
+  const el = document.getElementById(plotId);
+  const viewport = el.parentElement;
+  const targetWidth = Math.max(viewport.clientWidth, width || 0);
+  const targetHeight = Math.max(viewport.clientHeight, height || 0);
+  el.style.width = `${targetWidth}px`;
+  el.style.height = `${targetHeight}px`;
+  return { width: targetWidth, height: targetHeight };
+}
 
 function countGenes() {
   const lines = dataInput.value
@@ -80,8 +96,13 @@ function renderBarChart(genes) {
     hovertemplate: "<b>%{x}</b><br>Log2FC: %{y}<extra></extra>",
   };
 
+  const { width, height } = sizePlotElement("barChart", { width: genes.length * MIN_PX_PER_BAR });
+
   const layout = {
     ...PLOTLY_LAYOUT_BASE,
+    width,
+    height,
+    autosize: false,
     xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, title: "Gene", tickangle: -45 },
     yaxis: { ...PLOTLY_LAYOUT_BASE.yaxis, title: "Log2 Fold Change" },
   };
@@ -109,9 +130,13 @@ function renderVolcanoPlot(genes, fcThreshold, pThreshold) {
 
   const maxAbsFc = Math.max(1, ...genes.map((g) => Math.abs(g.log2fc))) * 1.15;
   const maxNegLogP = Math.max(negLogPThreshold, ...genes.map((g) => g.neg_log10_p)) * 1.15;
+  const { width, height } = sizePlotElement("volcanoChart", {});
 
   const layout = {
     ...PLOTLY_LAYOUT_BASE,
+    width,
+    height,
+    autosize: false,
     xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, title: "Log2 Fold Change", range: [-maxAbsFc, maxAbsFc] },
     yaxis: { ...PLOTLY_LAYOUT_BASE.yaxis, title: "-Log10(p-value)", range: [0, maxNegLogP] },
     legend: { orientation: "h", y: -0.25 },
@@ -166,12 +191,16 @@ function renderHeatmap(genes) {
     hovertemplate: "<b>%{y}</b><br>Log2FC: %{z}<extra></extra>",
   };
 
+  const { width, height } = sizePlotElement("heatmapChart", { height: sorted.length * MIN_PX_PER_ROW });
+
   const layout = {
     ...PLOTLY_LAYOUT_BASE,
+    width,
+    height,
+    autosize: false,
     margin: { t: 20, r: 20, b: 60, l: 100 },
     xaxis: { ...PLOTLY_LAYOUT_BASE.xaxis, title: "" },
     yaxis: { ...PLOTLY_LAYOUT_BASE.yaxis, title: "", autorange: "reversed" },
-    height: Math.max(380, sorted.length * 28),
   };
 
   Plotly.newPlot("heatmapChart", [trace], layout, PLOTLY_CONFIG);
@@ -200,12 +229,14 @@ function renderResults(data) {
   document.getElementById("statDown").textContent = data.summary.downregulated;
   document.getElementById("statNs").textContent = data.summary.not_significant;
 
+  // Charts are sized from their viewport's on-screen dimensions, so the
+  // section must be visible (and laid out) before Plotly measures it.
+  results.hidden = false;
+
   renderBarChart(data.genes);
   renderVolcanoPlot(data.genes, data.thresholds.fc_threshold, data.thresholds.p_threshold);
   renderHeatmap(data.genes);
   renderTable(data.genes);
-
-  results.hidden = false;
 }
 
 async function visualize() {

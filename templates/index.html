@@ -71,17 +71,23 @@
 
         <div class="chart-card">
           <h3>Fold Change by Gene</h3>
-          <div id="barChart" class="chart-plot"></div>
+          <div class="chart-viewport chart-viewport-x">
+            <div id="barChart" class="chart-plot"></div>
+          </div>
         </div>
 
         <div class="chart-card">
           <h3>Volcano Plot</h3>
-          <div id="volcanoChart" class="chart-plot"></div>
+          <div class="chart-viewport">
+            <div id="volcanoChart" class="chart-plot"></div>
+          </div>
         </div>
 
         <div class="chart-card">
           <h3>Fold Change Heatmap</h3>
-          <div id="heatmapChart" class="chart-plot chart-plot-tall"></div>
+          <div class="chart-viewport chart-viewport-y chart-viewport-tall">
+            <div id="heatmapChart" class="chart-plot"></div>
+          </div>
         </div>
 
         <div class="chart-card">
